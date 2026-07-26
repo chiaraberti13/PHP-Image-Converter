@@ -1,7 +1,7 @@
 # 🖼️ PHP Image Converter
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![PHP Version](https://img.shields.io/badge/PHP-7.4%2B-purple.svg)](https://www.php.net/)
+[![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-purple.svg)](https://www.php.net/)
 [![Made with ❤️](https://img.shields.io/badge/Made%20with-❤️-red.svg)](https://github.com/chiaraberti13)
 
 ---
@@ -25,7 +25,7 @@ A powerful, self-contained PHP image converter with an intuitive web interface. 
 
 ### 📋 Requirements
 
-- **PHP**: 7.4 or higher
+- **PHP**: 8.2 or higher
 - **PHP GD Library**: `php-gd` (required)
 - **ImageMagick Extension**: `php-imagick` (recommended for TIFF/HEIC support)
 - **ZipArchive Support**: For batch download functionality
@@ -137,7 +137,7 @@ Un potente convertitore di immagini PHP con interfaccia web intuitiva. Converti 
 
 ### 📋 Requisiti
 
-- **PHP**: 7.4 o superiore
+- **PHP**: 8.2 o superiore
 - **PHP GD Library**: `php-gd` (obbligatorio)
 - **Estensione ImageMagick**: `php-imagick` (consigliato per supporto TIFF/HEIC)
 - **Supporto ZipArchive**: Per la funzionalità di download batch

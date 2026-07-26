@@ -66,6 +66,8 @@ Ogni fase è un metodo dedicato e indipendente:
 
 Attenzione particolare è stata data alla **gestione della trasparenza** (canale alpha preservato per i PNG) e alla **gestione della memoria** (le risorse immagine vengono liberate con `imagedestroy()` a ogni passaggio, importante quando si elaborano molti file grandi).
 
+Il codice è scritto con le **pratiche moderne di PHP 8**: tipizzazione esplicita di proprietà, parametri e valori di ritorno (compresi gli *union type* come `\GdImage|false`), uso delle **espressioni `match`** al posto dei vecchi `switch`, e una **gestione degli errori robusta** basata su `\Throwable`, che intercetta anche le eccezioni di tipo `TypeError`/`ValueError` introdotte da PHP 8. Gli accessi agli array sono resi sicuri con il *null coalescing* per evitare i warning delle versioni recenti dell'interprete. Il progetto richiede **PHP 8.2+ ed è stato testato fino a PHP 8.4**.
+
 ### Il "router" delle API
 
 Il backend espone diversi **endpoint**, riconosciuti da un parametro `action`, ciascuno con una responsabilità precisa:
@@ -97,7 +99,7 @@ Interfaccia costruita in **JavaScript "vanilla"** (senza framework esterni), per
 
 ### Tecnologie usate
 
-- **PHP 7.4+** (backend e logica)
+- **PHP 8.2+** (backend e logica, testato fino a 8.4)
 - **Libreria GD** (elaborazione immagini nativa)
 - **ImageMagick** (opzionale, per HEIC/HEIF e TIFF)
 - **ZipArchive** (download multiplo in ZIP)
@@ -116,6 +118,7 @@ Ho **ideato e sviluppato il progetto end-to-end**, occupandomi di ogni suo aspet
 - **Ho progettato le API del backend**, definendo un insieme coerente di endpoint con risposte in JSON per far dialogare frontend e server senza mai ricaricare la pagina.
 - **Ho curato la gestione sicura dei file**: validazione degli upload, limiti dimensionali, isolamento per sessione e pulizia automatica dei file temporanei.
 - **Ho sviluppato l'interfaccia utente** in JavaScript puro, con drag-and-drop, elaborazione batch asincrona, barre di progresso e un layout responsive.
+- **Ho modernizzato il codice a PHP 8.2+** (testato fino a 8.4), introducendo tipizzazione statica, espressioni `match`, gestione degli errori con `\Throwable` e verificando l'assenza di errori con l'analisi statica (`php -l`) e con test funzionali della pipeline di conversione.
 - **Ho scritto la documentazione** completa e bilingue (README e guida all'installazione, in italiano e inglese).
 
 ---
@@ -124,11 +127,12 @@ Ho **ideato e sviluppato il progetto end-to-end**, occupandomi di ogni suo aspet
 
 Attraverso questo progetto ho dimostrato competenze in:
 
-- **Programmazione backend con PHP** e progettazione orientata agli oggetti (classi, incapsulamento, separazione delle responsabilità).
+- **Programmazione backend con PHP 8** e progettazione orientata agli oggetti (classi, incapsulamento, separazione delle responsabilità, tipizzazione statica, `match`, gestione delle eccezioni).
 - **Elaborazione digitale delle immagini**: uso delle librerie GD e ImageMagick, gestione di spazi colore, trasparenza, compressione e conversione tra formati.
 - **Progettazione di API** e comunicazione client–server asincrona in JSON.
 - **Sviluppo frontend**: HTML5, CSS3 (layout responsive), JavaScript moderno (Fetch API, `async/await`, manipolazione del DOM).
 - **Attenzione a sicurezza e affidabilità**: validazione degli input, gestione degli errori, isolamento dei dati per sessione, gestione consapevole della memoria.
+- **Manutenzione e ammodernamento del codice**: aggiornamento a una versione di linguaggio supportata (PHP 8.2+), verifica con analisi statica e test funzionali.
 - **Cura dell'esperienza utente (UX)**: interfaccia intuitiva, feedback in tempo reale, funzionalità batch.
 - **Documentazione tecnica** chiara e orientata all'utente finale.
 - **Autonomia nella gestione di un progetto completo**, dalla progettazione al rilascio.

@@ -23,7 +23,7 @@ That's it! 🎉
 Before installing, ensure your server meets these requirements:
 
 **Required:**
-- PHP 7.4 or higher
+- PHP 8.2 or higher
 - PHP GD Library (`php-gd`)
 - ZipArchive support
 
@@ -39,7 +39,7 @@ Create a file named `phpinfo.php` with:
 ```
 
 Upload it to your server and access it via browser. Check for:
-- PHP version (must be 7.4+)
+- PHP version (must be 8.2+)
 - GD Library (enabled)
 - ImageMagick (optional, for HEIC support)
 - ZipArchive (enabled)
@@ -158,7 +158,7 @@ sudo apt install php-zip
 # Restart web server
 sudo systemctl restart apache2
 # OR for Nginx with PHP-FPM:
-sudo systemctl restart php7.4-fpm
+sudo systemctl restart php8.3-fpm
 ```
 
 #### On CentOS/RHEL:
@@ -276,7 +276,7 @@ Il modo più semplice per iniziare:
 Prima di installare, assicurati che il tuo server soddisfi questi requisiti:
 
 **Obbligatori:**
-- PHP 7.4 o superiore
+- PHP 8.2 o superiore
 - PHP GD Library (`php-gd`)
 - Supporto ZipArchive
 
@@ -292,7 +292,7 @@ Crea un file chiamato `phpinfo.php` con:
 ```
 
 Caricalo sul server e accedi via browser. Controlla:
-- Versione PHP (deve essere 7.4+)
+- Versione PHP (deve essere 8.2+)
 - GD Library (abilitata)
 - ImageMagick (opzionale, per supporto HEIC)
 - ZipArchive (abilitato)
@@ -411,7 +411,7 @@ sudo apt install php-zip
 # Riavvia server web
 sudo systemctl restart apache2
 # OPPURE per Nginx con PHP-FPM:
-sudo systemctl restart php7.4-fpm
+sudo systemctl restart php8.3-fpm
 ```
 
 #### Su CentOS/RHEL:
