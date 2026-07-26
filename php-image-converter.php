@@ -1,10 +1,10 @@
 <?php
 /**
  * Image Converter by Chiara Berti
- * PHP 7.4 Version - All-in-One File
- * 
+ * PHP 8 Version - All-in-One File
+ *
  * Requirements:
- * - PHP 7.4+
+ * - PHP 8.2+ (tested up to 8.4)
  * - GD Library (php-gd)
  * - ImageMagick extension (php-imagick) - Recommended for TIFF/HEIC support
  * - ZipArchive support
@@ -40,17 +40,23 @@ if (!isset($_SESSION['files'])) {
  * Classe principale per la conversione immagini
  */
 class ImageConverter {
-    
-    private $imagick_available = false;
-    
+
+    private bool $imagick_available = false;
+
     public function __construct() {
         $this->imagick_available = extension_loaded('imagick');
     }
-    
+
     /**
      * Converte un'immagine nel formato specificato
      */
-    public function convert($sourcePath, $targetFormat, $quality = 92, $resizeOptions = null, $cropOptions = null) {
+    public function convert(
+        string $sourcePath,
+        string $targetFormat,
+        int $quality = 92,
+        ?array $resizeOptions = null,
+        ?array $cropOptions = null
+    ): array {
         try {
             // Carica l'immagine sorgente
             $image = $this->loadImage($sourcePath);
@@ -85,19 +91,19 @@ class ImageConverter {
             imagedestroy($image);
             
             return $result;
-            
-        } catch (Exception $e) {
+
+        } catch (\Throwable $e) {
             error_log("Errore conversione: " . $e->getMessage());
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }
-    
+
     /**
      * Carica un'immagine da file
      */
-    private function loadImage($path) {
-        $imageInfo = getimagesize($path);
-        
+    private function loadImage(string $path): \GdImage|false {
+        $imageInfo = @getimagesize($path);
+
         if (!$imageInfo) {
             // Prova con ImageMagick per formati speciali (HEIC, TIFF complessi)
             if ($this->imagick_available) {
@@ -105,40 +111,30 @@ class ImageConverter {
             }
             return false;
         }
-        
+
         $mimeType = $imageInfo['mime'];
-        
-        switch ($mimeType) {
-            case 'image/jpeg':
-                return imagecreatefromjpeg($path);
-            case 'image/png':
-                return imagecreatefrompng($path);
-            case 'image/gif':
-                return imagecreatefromgif($path);
-            case 'image/bmp':
-            case 'image/x-ms-bmp':
-                return imagecreatefrombmp($path);
-            case 'image/webp':
-                return imagecreatefromwebp($path);
-            case 'image/tiff':
-                // TIFF richiede ImageMagick
-                if ($this->imagick_available) {
-                    return $this->loadWithImageMagick($path);
-                }
-                throw new Exception("TIFF richiede l'estensione ImageMagick");
-            default:
-                // Prova comunque con ImageMagick
-                if ($this->imagick_available) {
-                    return $this->loadWithImageMagick($path);
-                }
-                throw new Exception("Formato immagine non supportato: " . $mimeType);
-        }
+
+        return match ($mimeType) {
+            'image/jpeg' => imagecreatefromjpeg($path),
+            'image/png'  => imagecreatefrompng($path),
+            'image/gif'  => imagecreatefromgif($path),
+            'image/bmp', 'image/x-ms-bmp' => imagecreatefrombmp($path),
+            'image/webp' => imagecreatefromwebp($path),
+            // TIFF richiede ImageMagick
+            'image/tiff' => $this->imagick_available
+                ? $this->loadWithImageMagick($path)
+                : throw new Exception("TIFF richiede l'estensione ImageMagick"),
+            // Prova comunque con ImageMagick per gli altri formati (es. HEIC)
+            default => $this->imagick_available
+                ? $this->loadWithImageMagick($path)
+                : throw new Exception("Formato immagine non supportato: " . $mimeType),
+        };
     }
-    
+
     /**
      * Carica immagine usando ImageMagick (per formati speciali)
      */
-    private function loadWithImageMagick($path) {
+    private function loadWithImageMagick(string $path): \GdImage|false {
         try {
             $imagick = new Imagick($path);
             
@@ -156,17 +152,17 @@ class ImageConverter {
             $imagick->destroy();
             
             return $image;
-            
-        } catch (Exception $e) {
+
+        } catch (\Throwable $e) {
             error_log("Errore ImageMagick: " . $e->getMessage());
             return false;
         }
     }
-    
+
     /**
      * Applica ritaglio all'immagine
      */
-    private function applyCrop($image, $width, $height, $aspectRatio) {
+    private function applyCrop(\GdImage $image, int $width, int $height, string $aspectRatio): \GdImage {
         list($ratioW, $ratioH) = explode(':', $aspectRatio);
         $targetRatio = (float)$ratioW / (float)$ratioH;
         $imageRatio = $width / $height;
@@ -207,7 +203,7 @@ class ImageConverter {
     /**
      * Applica ridimensionamento all'immagine
      */
-    private function applyResize($image, $width, $height, $resizeOptions) {
+    private function applyResize(\GdImage $image, int $width, int $height, array $resizeOptions): \GdImage {
         $targetWidth = $resizeOptions['width'];
         $targetHeight = $resizeOptions['height'];
         
@@ -251,7 +247,7 @@ class ImageConverter {
     /**
      * Salva l'immagine nel formato specificato
      */
-    private function saveImage($image, $basePath, $format, $quality) {
+    private function saveImage(\GdImage $image, string $basePath, string $format, int $quality): array {
         $format = strtoupper($format);
         $extension = strtolower($format);
         
@@ -357,7 +353,7 @@ class ImageConverter {
                 'mimeType' => $mimeType
             ];
             
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Errore salvataggio immagine: " . $e->getMessage());
             return ['success' => false, 'error' => $e->getMessage()];
         }
@@ -367,23 +363,23 @@ class ImageConverter {
 /**
  * Funzioni di utilità
  */
-function formatFileSize($bytes) {
-    if ($bytes == 0) return '0 Bytes';
+function formatFileSize(int $bytes): string {
+    if ($bytes === 0) return '0 Bytes';
     $k = 1024;
     $sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    $i = floor(log($bytes) / log($k));
+    $i = (int)floor(log($bytes) / log($k));
     return round($bytes / pow($k, $i), 2) . ' ' . $sizes[$i];
 }
 
-function generateFilename($originalName, $targetFormat, $namingConvention) {
+function generateFilename(string $originalName, string $targetFormat, array $namingConvention): string {
     $pathInfo = pathinfo($originalName);
     $nameWithoutExtension = $pathInfo['filename'];
-    
+
     // Gestisci estensione TIFF speciale
     $extension = strtolower($targetFormat);
     if ($targetFormat === 'TIFF') {
         // Preserva .tif se l'originale era .tif
-        $originalExtension = strtolower($pathInfo['extension']);
+        $originalExtension = strtolower($pathInfo['extension'] ?? '');
         if ($originalExtension === 'tif') {
             $extension = 'tif';
         } else {
@@ -407,12 +403,12 @@ function generateFilename($originalName, $targetFormat, $namingConvention) {
     }
 }
 
-function isValidImageFile($file) {
+function isValidImageFile(array $file): bool {
     $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-    return in_array($extension, SUPPORTED_INPUT_EXTENSIONS);
+    return in_array($extension, SUPPORTED_INPUT_EXTENSIONS, true);
 }
 
-function cleanupOldFiles() {
+function cleanupOldFiles(): void {
     // Pulisci file più vecchi di 1 ora
     $files = glob(UPLOAD_DIR . '*');
     $now = time();
@@ -429,7 +425,7 @@ function cleanupOldFiles() {
  */
 
 // Upload file
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'upload') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'upload') {
     header('Content-Type: application/json');
     
     if (!isset($_FILES['files'])) {
@@ -505,7 +501,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 }
 
 // Converti file
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'convert') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'convert') {
     header('Content-Type: application/json');
     
     $fileId = $_POST['fileId'] ?? '';
@@ -560,7 +556,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 }
 
 // Download singolo file
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'download') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET' && isset($_GET['action']) && $_GET['action'] === 'download') {
     $fileId = $_GET['fileId'] ?? '';
     
     if (!isset($_SESSION['files'][$fileId]) || !isset($_SESSION['files'][$fileId]['convertedPath'])) {
@@ -597,7 +593,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
 }
 
 // Download ZIP di tutti i file convertiti
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'downloadAll') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET' && isset($_GET['action']) && $_GET['action'] === 'downloadAll') {
     
     $convertedFiles = array_filter($_SESSION['files'], function($file) {
         return $file['status'] === 'done' && isset($file['convertedPath']);
@@ -645,7 +641,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
 }
 
 // Get lista file
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'getFiles') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET' && isset($_GET['action']) && $_GET['action'] === 'getFiles') {
     header('Content-Type: application/json');
     
     $filesList = [];
@@ -665,7 +661,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
 }
 
 // Rimuovi file
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'removeFile') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'removeFile') {
     header('Content-Type: application/json');
     
     $fileId = $_POST['fileId'] ?? '';
@@ -691,7 +687,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 }
 
 // Clear all
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'clearAll') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'clearAll') {
     header('Content-Type: application/json');
     
     foreach ($_SESSION['files'] as $file) {
@@ -710,7 +706,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 }
 
 // Aggiorna formato target
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'updateFormat') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'updateFormat') {
     header('Content-Type: application/json');
     
     $fileId = $_POST['fileId'] ?? '';
@@ -726,7 +722,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 }
 
 // Aggiorna naming convention
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'updateNaming') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'updateNaming') {
     header('Content-Type: application/json');
     
     $_SESSION['namingConvention'] = [

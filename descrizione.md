@@ -97,7 +97,7 @@ Interfaccia costruita in **JavaScript "vanilla"** (senza framework esterni), per
 
 ### Tecnologie usate
 
-- **PHP 7.4+** (backend e logica)
+- **PHP 8.2+** (backend e logica, testato fino a 8.4)
 - **Libreria GD** (elaborazione immagini nativa)
 - **ImageMagick** (opzionale, per HEIC/HEIF e TIFF)
 - **ZipArchive** (download multiplo in ZIP)
